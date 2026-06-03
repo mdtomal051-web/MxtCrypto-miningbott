@@ -1276,14 +1276,14 @@
  <script>
      // --- ফায়ারবেস কনফিগারেশন সেটআপ ---
      const firebaseConfig = {
-  apiKey: "AIzaSyDJXZAdXHt8N9pEWr8Dd7grWwQy7XuxSkI",
-  authDomain: "mxtcryptomining-62a7d.firebaseapp.com",
-  databaseURL: "https://mxtcryptomining-62a7d-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "mxtcryptomining-62a7d",
-  storageBucket: "mxtcryptomining-62a7d.firebasestorage.app",
-  messagingSenderId: "380238642312",
-  appId: "1:380238642312:web:f8ea156af042a54635733d",
-};
+          apiKey: "AIzaSyDJXZAdXHt8N9pEWr8Dd7grWwQy7XuxSkI",
+          authDomain: "mxtcryptomining-62a7d.firebaseapp.com",
+          databaseURL: "https://mxtcryptomining-62a7d-default-rtdb.asia-southeast1.firebasedatabase.app",
+          projectId: "mxtcryptomining-62a7d",
+          storageBucket: "mxtcryptomining-62a7d.firebasestorage.app",
+          messagingSenderId: "380238642312",
+          appId: "1:380238642312:web:f8ea156af042a54635733d",
+     };
 
      // ফায়ারবেস ইনিশিয়ালাইজ করা
      firebase.initializeApp(firebaseConfig);
@@ -1336,12 +1336,13 @@
      ];
      let currentNoticeIndex = 0;
 
-     // 🛠️ ফিক্স ১: .set() এর জায়গায় .update() করা হলো যাতে এডমিন ভ্যালু ওভাররাইট না হয়
+     // 🛠️ ফাংশন: .update() এর মাধ্যমে লোকাল স্টেট ফায়ারবেসে সেভ করা
      function saveUserDataToFirebase() {
          if (!userId) return;
          database.ref('users/' + userId + '/state').update({
              walletMxt: appState.walletMxt,
              walletUsdt: appState.walletUsdt,
+             rechargeUsdt: appState.rechargeUsdt, // নিশ্চিত করা হলো যেন সেভ হয়
              baseHourlySpeed: appState.baseHourlySpeed,
              isMiningActive: appState.isMiningActive,
              miningTimeRemaining: appState.miningTimeRemaining,
@@ -1446,13 +1447,11 @@
          });
      }
 
-     // 🛠️ ফিক্স ২: .once() এর বদলে .on() করা হলো যাতে এডমিন প্যানেলের পরিবর্তন লাইভ সিঙ্ক হয়
      function loadUserDataAndHandleReferral(username) {
          database.ref('users/' + userId).on('value', (snapshot) => {
              let data = snapshot.val();
              
              if (data && data.state) {
-                 // এডমিন প্যানেল থেকে আসা লাইভ ব্যালেন্স ও ভ্যালু সিঙ্ক করা হচ্ছে
                  appState.rechargeUsdt = parseFloat(data.state.rechargeUsdt) || 0.0;
                  appState.walletUsdt = parseFloat(data.state.walletUsdt) || 0.0;
                  appState.walletMxt = parseFloat(data.state.walletMxt) || 0.0;
@@ -1467,7 +1466,6 @@
                  
                  appState.purchasedPlanes = data.state.purchasedPlanes || [];
                  
-                 // মাইনিং রানিং থাকলে ব্যাকগ্রাউন্ড টাইম ক্যালকুলেশন (শুধুমাত্র প্রথম লুপ সেশনের জন্য)
                  if (data.state.isMiningActive && !miningSessionTicker) {
                      appState.isMiningActive = data.state.isMiningActive;
                      appState.miningTimeRemaining = data.state.miningTimeRemaining;
@@ -1972,30 +1970,65 @@
          }
      }
 
+     // 🛠️ ফিক্সড ফাংশন: ফায়ারবেস ট্রানজেকশন ব্যবহার করে নিখুঁতভাবে রিচার্জ ওয়ালেট থেকে ডলার কাটা
      function confirmPurchase() {
         let finalCost = selectedProduct.pricePerUnit * selectedProduct.qty;
         
-        if (appState.rechargeUsdt >= finalCost) {
-            appState.rechargeUsdt -= finalCost; 
-            appState.baseHourlySpeed += (selectedProduct.speedPerUnit * selectedProduct.qty);
-            
-            if (!appState.purchasedPlanes) appState.purchasedPlanes = [];
-            
-            appState.purchasedPlanes.push({
-                name: selectedProduct.name,
-                qty: selectedProduct.qty,
-                pricePaid: finalCost.toFixed(2)
-            });
-            
-            closeModal('purchase-modal');
-            alert(`Successfully purchased ${selectedProduct.qty}x ${selectedProduct.name}!`);
-            
-            saveUserDataToFirebase();
-            syncDomBalances();
-            switchSubTab('myplanes');
-        } else {
+        if (appState.rechargeUsdt < finalCost) {
             alert("Insufficient USDT Balance inside Recharge Wallet! Please recharge first.");
+            return;
         }
+
+        // ফায়ারবেস ট্রানজেকশন রান করা হচ্ছে যেন রিয়েল-টাইমে সিকিউরলি ব্যালেন্স কাটা যায়
+        const userStateRef = database.ref('users/' + userId + '/state');
+        
+        userStateRef.transaction((currentState) => {
+            if (currentState) {
+                let currentRechargeUsdt = parseFloat(currentState.rechargeUsdt) || 0;
+                
+                // ডাবল চেক করা হচ্ছে ডেটাবেসে পর্যাপ্ত ব্যালেন্স আছে কিনা
+                if (currentRechargeUsdt >= finalCost) {
+                    // ১. ব্যালেন্স কাটা
+                    currentState.rechargeUsdt = currentRechargeUsdt - finalCost;
+                    
+                    // ২. স্পিড বুস্ট যোগ করা
+                    let currentSpeed = parseFloat(currentState.baseHourlySpeed) || 10.0;
+                    currentState.baseHourlySpeed = currentSpeed + (selectedProduct.speedPerUnit * selectedProduct.qty);
+                    
+                    // ৩. পারচেজড হিস্ট্রি বা প্ল্যান লিস্টে যোগ করা
+                    if (!currentState.purchasedPlanes) {
+                        currentState.purchasedPlanes = [];
+                    }
+                    currentState.purchasedPlanes.push({
+                        name: selectedProduct.name,
+                        qty: selectedProduct.qty,
+                        pricePaid: finalCost.toFixed(2)
+                    });
+                } else {
+                    // পর্যাপ্ত ব্যালেন্স না থাকলে ট্রানজেকশন বাতিল করা
+                    return; 
+                }
+            }
+            return currentState;
+        }, (error, committed, snapshot) => {
+            if (error) {
+                alert("Transaction failed: " + error.message);
+            } else if (!committed) {
+                alert("Purchase failed! Insufficient balance in database.");
+            } else {
+                // ট্রানজেকশন সফল হলে লোকাল অ্যাপ স্টেট আপডেট করা
+                let updatedData = snapshot.val();
+                appState.rechargeUsdt = updatedData.rechargeUsdt;
+                appState.baseHourlySpeed = updatedData.baseHourlySpeed;
+                appState.purchasedPlanes = updatedData.purchasedPlanes;
+
+                closeModal('purchase-modal');
+                alert(`Successfully purchased ${selectedProduct.qty}x ${selectedProduct.name}!`);
+                
+                syncDomBalances();
+                switchSubTab('myplanes');
+            }
+        });
      }
 
      function switchTab(tabId, element) {
