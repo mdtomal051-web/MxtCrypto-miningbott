@@ -298,6 +298,9 @@
          background: #ccff00; color: #000; border: none; font-weight: bold;
          padding: 6px 16px; border-radius: 12px; font-size: 12px; cursor: pointer;
      }
+     .task-action-btn:disabled {
+         background: #22252c; color: #848e9c; cursor: not-allowed;
+     }
      .task-count-badge {
          background: #22252c; color: #848e9c; font-size: 12px;
          padding: 6px 12px; border-radius: 12px;
@@ -801,28 +804,28 @@
          <button class="action-trigger-btn btn-start" id="mine-action-btn" onclick="handleMiningAction()">Start Mining</button>
      </div>
 
-        <div class="tasks-header">Tasks Center</div>
+     <div class="tasks-header">Tasks Center</div>
      <div class="tasks-box-panel">
          <div class="task-row-item">
              <div>
                  <div class="task-title">Follow channel</div>
                  <div class="task-reward">
-                     <div class="coin-circle mxt-bg"><img src="https://i.postimg.cc/VL6JGm4B/20260526-224523.png" alt="M" class="avatar-img"></div> +0.40
+                     <div class="coin-circle mxt-bg"><img src="https://i.postimg.cc/VL6JGm4B/20260526-224523.png" alt="M" class="avatar-img"></div> +10.00 MXT
                  </div>
-                 <div class="task-sub-info">Follow channel</div>
+                 <div class="task-sub-info">Follow channel and claim reward</div>
              </div>
-             <button class="task-action-btn" onclick="if(window.Telegram?.WebApp?.openTelegramLink) { window.Telegram.WebApp.openTelegramLink('https://t.me/MXTCryptoMining'); } else { window.open('https://t.me/MXTCryptoMining', '_blank'); }">Follow</button>
+             <button class="task-action-btn" id="claim-task-channel" onclick="claimChannelTask()">Follow</button>
          </div>
 
          <div class="task-row-item">
              <div>
                  <div class="task-title">Invite 3 valid users</div>
                  <div class="task-reward">
-                     <div class="coin-circle mxt-bg"><img src="https://i.postimg.cc/VL6JGm4B/20260526-224523.png" alt="M" class="avatar-img"></div> +10
+                     <div class="coin-circle mxt-bg"><img src="https://i.postimg.cc/VL6JGm4B/20260526-224523.png" alt="M" class="avatar-img"></div> +10 MXT
                  </div>
                  <div class="task-sub-info">Invite 3 valid users</div>
              </div>
-             <div class="task-count-badge">0 / 1</div>
+             <button class="task-action-btn" id="claim-task-3ref" onclick="claimThreeRefTask()">Claim</button>
          </div>
      </div>
  </div>
@@ -830,7 +833,6 @@
 
  <div id="tab-leaderboard" class="tab-content">
      <div class="lb-tab-nav">
-
          <button class="lb-nav-btn active">Holding Ranking</button>
          <button class="lb-nav-btn">City/Regional Team Ranking</button>
      </div>
@@ -887,8 +889,8 @@
                      <span class="lb-user-amt"><div class="lb-gold-icon"></div> 7750.6498000</span>
                  </div>
              </div>
-            <span class="lb-rank-badge" style="font-weight: bold; color: #848e9c; font-size: 16px;">4</span>
-              </div>
+             <span class="lb-rank-badge" style="font-weight: bold; color: #848e9c; font-size: 16px;">4</span>
+         </div>
          <div class="lb-user-row">
              <div class="lb-user-left">
                  <div class="lb-avatar-circle">Xan</div>
@@ -897,8 +899,8 @@
                      <span class="lb-user-amt"><div class="lb-gold-icon"></div> 6698.26498000</span>
                  </div>
              </div>
-         <span class="lb-rank-badge" style="font-weight: bold; color: #848e9c; font-size: 16px;">5</span>
-           </div>
+             <span class="lb-rank-badge" style="font-weight: bold; color: #848e9c; font-size: 16px;">5</span>
+         </div>
          <div class="lb-user-row">
              <div class="lb-user-left">
                  <div class="lb-avatar-circle">Wi</div>
@@ -907,8 +909,8 @@
                      <span class="lb-user-amt"><div class="lb-gold-icon"></div> 5673.12498000</span>
                  </div>
              </div>
-          <span class="lb-rank-badge" style="font-weight: bold; color: #848e9c; font-size: 16px;">6</span>
-           </div>
+             <span class="lb-rank-badge" style="font-weight: bold; color: #848e9c; font-size: 16px;">6</span>
+         </div>
          <div class="lb-user-row">
              <div class="lb-user-left">
                  <div class="lb-avatar-circle">TX</div>
@@ -917,7 +919,7 @@
                      <span class="lb-user-amt"><div class="lb-gold-icon"></div> 4576.64927200</span>
                  </div>
              </div>
-       <span class="lb-rank-badge" style="font-weight: bold; color: #848e9c; font-size: 16px;">7</span>
+             <span class="lb-rank-badge" style="font-weight: bold; color: #848e9c; font-size: 16px;">7</span>
          </div>
          <div class="lb-user-row">
              <div class="lb-user-left">
@@ -927,7 +929,7 @@
                      <span class="lb-user-amt"><div class="lb-gold-icon"></div> 3567.123198000</span>
                  </div>
              </div>
-          <span class="lb-rank-badge" style="font-weight: bold; color: #848e9c; font-size: 16px;">8</span>
+             <span class="lb-rank-badge" style="font-weight: bold; color: #848e9c; font-size: 16px;">8</span>
          </div>
          <div class="lb-user-row">
              <div class="lb-user-left">
@@ -937,8 +939,8 @@
                      <span class="lb-user-amt"><div class="lb-gold-icon"></div> 2543.23497538</span>
                  </div>
              </div>
-        <span class="lb-rank-badge" style="font-weight: bold; color: #848e9c; font-size: 16px;">9</span>
-      </div>
+             <span class="lb-rank-badge" style="font-weight: bold; color: #848e9c; font-size: 16px;">9</span>
+         </div>
          <div class="lb-user-row">
              <div class="lb-user-left">
                  <div class="lb-avatar-circle">Qs</div>
@@ -947,8 +949,8 @@
                      <span class="lb-user-amt"><div class="lb-gold-icon"></div> 1496.818198000</span>
                  </div>
              </div>
-<span class="lb-rank-badge" style="font-weight: bold; color: #848e9c; font-size: 16px;">10</span>
-             </div>
+             <span class="lb-rank-badge" style="font-weight: bold; color: #848e9c; font-size: 16px;">10</span>
+         </div>
      </div>
  </div>
 
@@ -959,7 +961,7 @@
              <span>Share your link and start making money</span>
              <button class="team-copy-btn" onclick="copyReferralLink()">Copy</button>
          </div>
-         <div class="team-link-input-box" id="ref-link-text">https://t.me/MXTCrypto_Mining_bot?start=ref_898314</div>
+         <div class="team-link-input-box" id="ref-link-text">https://t.me/MXTCrypto_Mining_bot/MXTCryptoMining?startapp=ref_898314</div>
 
          <div class="team-share-to-label">Share To</div>
          <div class="team-social-row">
@@ -990,6 +992,66 @@
          </div>
 
          <button class="team-big-share-btn" onclick="shareWithFriends()">Share with friends</button>
+
+         <div class="tasks-header" style="margin-top: 25px;">Referral Milestones</div>
+         <div class="tasks-box-panel" style="margin-bottom: 10px; background: #111317;">
+             
+             <div class="task-row-item">
+                 <div>
+                     <div class="task-title">Invite 10 Users</div>
+                     <div class="task-reward">
+                         <div class="coin-circle mxt-bg"><img src="https://i.postimg.cc/VL6JGm4B/20260526-224523.png" alt="M" class="avatar-img"></div> +500 MXT
+                     </div>
+                     <div class="task-sub-info">Reward adds to Brokerage Wallet</div>
+                 </div>
+                 <button class="task-action-btn" id="milestone-btn-10" onclick="claimMilestone(10, 500)">Claim</button>
+             </div>
+
+             <div class="task-row-item">
+                 <div>
+                     <div class="task-title">Invite 20 Users</div>
+                     <div class="task-reward">
+                         <div class="coin-circle mxt-bg"><img src="https://i.postimg.cc/VL6JGm4B/20260526-224523.png" alt="M" class="avatar-img"></div> +1000 MXT
+                     </div>
+                     <div class="task-sub-info">Reward adds to Brokerage Wallet</div>
+                 </div>
+                 <button class="task-action-btn" id="milestone-btn-20" onclick="claimMilestone(20, 1000)">Claim</button>
+             </div>
+
+             <div class="task-row-item">
+                 <div>
+                     <div class="task-title">Invite 40 Users</div>
+                     <div class="task-reward">
+                         <div class="coin-circle mxt-bg"><img src="https://i.postimg.cc/VL6JGm4B/20260526-224523.png" alt="M" class="avatar-img"></div> +2000 MXT
+                     </div>
+                     <div class="task-sub-info">Reward adds to Brokerage Wallet</div>
+                 </div>
+                 <button class="task-action-btn" id="milestone-btn-40" onclick="claimMilestone(40, 2000)">Claim</button>
+             </div>
+
+             <div class="task-row-item">
+                 <div>
+                     <div class="task-title">Invite 80 Users</div>
+                     <div class="task-reward">
+                         <div class="coin-circle mxt-bg"><img src="https://i.postimg.cc/VL6JGm4B/20260526-224523.png" alt="M" class="avatar-img"></div> +4000 MXT
+                     </div>
+                     <div class="task-sub-info">Reward adds to Brokerage Wallet</div>
+                 </div>
+                 <button class="task-action-btn" id="milestone-btn-80" onclick="claimMilestone(80, 4000)">Claim</button>
+             </div>
+
+             <div class="task-row-item">
+                 <div>
+                     <div class="task-title">Invite 160 Users</div>
+                     <div class="task-reward">
+                         <div class="coin-circle mxt-bg"><img src="https://i.postimg.cc/VL6JGm4B/20260526-224523.png" alt="M" class="avatar-img"></div> +8000 MXT
+                     </div>
+                     <div class="task-sub-info">Reward adds to Brokerage Wallet</div>
+                 </div>
+                 <button class="task-action-btn" id="milestone-btn-160" onclick="claimMilestone(160, 8000)">Claim</button>
+             </div>
+
+         </div>
      </div>
  </div>
 
@@ -1028,6 +1090,13 @@
                  USDT Brokerage:
              </div>
              <div style="font-weight:bold; font-size:14px; color:#ccff00;" id="me-usdt-brokerage-val">0.000000</div>
+         </div>
+         <div class="me-wallet-row">
+             <div class="me-coin-name">
+                 <div class="coin-circle usdt-bg" style="width:16px; height:16px; background:#f3ba2f;"><img src="https://i.postimg.cc/KcnntG4Z/20260526-230657.png" alt="U" class="avatar-img"></div> 
+                 USDT Recharge:
+             </div>
+             <div style="font-weight:bold; font-size:14px; color:#ffffff;" id="me-usdt-recharge-val">0.00</div>
          </div>
      </div>
 
@@ -1077,7 +1146,7 @@
          </div>
          <div class="detail-row" style="margin-bottom:12px;">
              <span>Current Price Rate:</span>
-             <span style="color:#ccff00; font-weight:bold;">1 MXT = 0.001 USDT</span>
+             <span style="color:#ccff00; font-weight:bold;">1 MXT = 0.0001 USDT</span>
          </div>
 
          <label style="font-size:12px; color:#848e9c;">Amount of MXT to Convert:</label>
@@ -1105,8 +1174,8 @@
          <div class="detail-row"><span>Daily Output</span><span id="modal-daily-output" class="detail-val-white">0.01 MXT</span></div>
          <div class="modal-divider"></div>
          <div class="detail-row"><span>Price</span><span id="modal-package-price" class="detail-val-white">16.00 USDT</span></div>
-         <div class="modal-divider"></div>
-         <div class="detail-row"><span>Available balance</span><span id="modal-available-balance" style="color:#ccff00; font-weight:bold;">0.000000 USDT</span></div>
+         <div class="divider"></div>
+         <div class="detail-row"><span>Available Recharge Balance</span><span id="modal-available-balance" style="color:#ccff00; font-weight:bold;">0.000000 USDT</span></div>
          <div class="modal-divider"></div>
          <div class="qty-container">
              <span style="font-size:13px; color:#848e9c;">Purchase Quantity</span>
@@ -1120,7 +1189,7 @@
      </div>
  </div>
 
-<div class="modal-overlay" id="recharge-modal">
+ <div class="modal-overlay" id="recharge-modal">
      <div class="modal-card">
          <button class="modal-close" onclick="closeModal('recharge-modal')">✕</button>
          <div style="text-align:center; font-weight:bold; margin-bottom:15px; color:#ccff00; font-size:16px;">
@@ -1197,18 +1266,16 @@
      </div>
  </div>
 
-
  <script>
      // --- ফায়ারবেস কনফিগারেশন সেটআপ ---
      const firebaseConfig = {
-  apiKey: "AIzaSyDOp-RPomHYRkOnfaGZaBuOGv-kgEv-KTk",
-  authDomain: "mxtcryptomining.firebaseapp.com",
-  databaseURL: "https://mxtcryptomining-default-rtdb.firebaseio.com",
-  projectId: "mxtcryptomining",
-  storageBucket: "mxtcryptomining.firebasestorage.app",
-  messagingSenderId: "338758148274",
-  appId: "1:338758148274:web:a87bc15fd54990fa87e9ab",
- 
+  apiKey: "AIzaSyDJXZAdXHt8N9pEWr8Dd7grWwQy7XuxSkI",
+  authDomain: "mxtcryptomining-62a7d.firebaseapp.com",
+  databaseURL: "https://mxtcryptomining-62a7d-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "mxtcryptomining-62a7d",
+  storageBucket: "mxtcryptomining-62a7d.firebasestorage.app",
+  messagingSenderId: "380238642312",
+  appId: "1:380238642312:web:f8ea156af042a54635733d",
 };
 
      // ফায়ারবেস ইনিশিয়ালাইজ করা
@@ -1225,6 +1292,7 @@
      let userId = "test_user_id"; 
      let userGlobalName = "TestUser";
      let referrerId = null;
+     let totalTeamCount = 0; 
 
      let appState = {
          walletMxt: 0.0,
@@ -1236,8 +1304,17 @@
          maxSessionTime: 86400,  
          accumulatedPendingToken: 0.0,
          purchasedPlanes: [],
-         mxtPriceRate: 0.05,
-         lastSavedTime: Date.now()
+         mxtPriceRate: 0.0001, 
+         lastSavedTime: Date.now(),
+         completedTasks: {
+             taskChannel: false, 
+             task3ref: false,
+             milestone10: false,
+             milestone20: false,
+             milestone40: false,
+             milestone80: false,
+             milestone160: false
+         }
      };
 
      let selectedProduct = { name: '', pricePerUnit: 0, speedPerUnit: 0, dailyOutputStr: '', qty: 1 };
@@ -1258,47 +1335,54 @@
      }
 
      function initTelegramUser() {
-         let nameElement = document.getElementById('user-display-name');
-         let avatarElement = document.getElementById('user-avatar-img');
-         let refLinkElement = document.getElementById('ref-link-text');
+        let nameElement = document.getElementById('user-display-name');
+        let avatarElement = document.getElementById('user-avatar-img');
+        let refLinkElement = document.getElementById('ref-link-text');
 
-         if (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) {
-             let startParam = tg.initDataUnsafe.start_param;
-             if (startParam.startsWith('ref_')) {
-                 referrerId = startParam.replace('ref_', '');
-             }
-         }
+        if (tg && tg.initDataUnsafe) {
+            let startParam = tg.initDataUnsafe.start_param;
+            
+            if (!startParam) {
+                const urlParams = new URLSearchParams(window.location.search);
+                startParam = urlParams.get('tgWebAppStartParam');
+            }
 
-         if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-             const user = tg.initDataUnsafe.user;
-             userId = user.id.toString();
-             
-             let fullName = user.first_name;
-             if (user.last_name) {
-                 fullName += " " + user.last_name;
-             }
-             userGlobalName = user.username || fullName;
-             nameElement.innerText = fullName.toUpperCase();
+            if (startParam) {
+                referrerId = startParam.replace('ref_', '');
+                console.log("Referrer ID Found: " + referrerId); 
+            }
+        }
 
-             if (user.photo_url) {
-                 avatarElement.src = user.photo_url;
-             }
+        if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            const user = tg.initDataUnsafe.user;
+            userId = user.id.toString();
+            
+            let fullName = user.first_name;
+            if (user.last_name) {
+                fullName += " " + user.last_name;
+            }
+            userGlobalName = user.username || fullName;
+            nameElement.innerText = fullName.toUpperCase();
 
-             refLinkElement.innerText = `https://t.me/MXTCrypto_Mining_bot?start=ref_${userId}`;
-             loadUserDataAndHandleReferral(userGlobalName);
+            if (user.photo_url) {
+                avatarElement.src = user.photo_url;
+            }
 
-         } else {
-             nameElement.innerText = "TEST USER";
-             refLinkElement.innerText = `https://t.me/MXTCrypto_Mining_bot?start=ref_${userId}`;
-             loadUserDataAndHandleReferral("TestUser");
-         }
+            // UPDATED: সঠিক ডোমেইন ভিত্তিক অ্যাপ লিঙ্ক এখানে বসানো হয়েছে
+            refLinkElement.innerText = `https://t.me/MXTCrypto_Mining_bot/MXTCryptoMining?startapp=ref_${userId}`;
+            loadUserDataAndHandleReferral(userGlobalName);
 
-         // রিয়েল-টাইম ডাটাবেজ লিসেনার চালু করা
-         loadGlobalPackages();
-         loadSystemSettings();
+        } else {
+            nameElement.innerText = "TEST USER";
+            // UPDATED: সঠিক ডোমেইন ভিত্তিক অ্যাপ লিঙ্ক টেস্ট ইউজারের জন্যও আপডেট করা হয়েছে
+            refLinkElement.innerText = `https://t.me/MXTCrypto_Mining_bot/MXTCryptoMining?startapp=ref_${userId}`;
+            loadUserDataAndHandleReferral("TestUser");
+        }
+
+        loadGlobalPackages();
+        loadSystemSettings();
      }
 
-     // ১. অ্যাডমিন প্যানেল থেকে প্ল্যান লোড করার গ্লোবাল ফাংশন
      function loadGlobalPackages() {
          database.ref('packages').on('value', (snapshot) => {
              const packages = snapshot.val();
@@ -1332,7 +1416,6 @@
          });
      }
 
-     // ৩. অ্যাডমিন প্যানেল থেকে BEP-20 ডিপোজিট অ্যাড্রেস লোড করার ফাংশন
      function loadSystemSettings() {
          database.ref('system_settings/bep20_address').on('value', (snapshot) => {
              let adminAddress = snapshot.val();
@@ -1340,7 +1423,7 @@
              if (adminAddress && depositField) {
                  depositField.innerText = adminAddress;
              } else if(depositField) {
-                 depositField.innerText = "0x71C7656EC7ab88b098defB751B7401B5f6d8976F"; // Default Fallback
+                 depositField.innerText = "0x71C7656EC7ab88b098defB751B7401B5f6d8976F"; 
              }
          });
      }
@@ -1351,6 +1434,11 @@
              
              if (data && data.state) {
                  appState = data.state;
+                 appState.mxtPriceRate = 0.0001;
+                 
+                 if(!appState.completedTasks) {
+                     appState.completedTasks = { taskChannel: false, task3ref: false, milestone10: false, milestone20: false, milestone40: false, milestone80: false, milestone160: false };
+                 }
                  
                  if (appState.isMiningActive) {
                      let now = Date.now();
@@ -1388,12 +1476,132 @@
          });
      }
 
+     function claimChannelTask() {
+         if(appState.completedTasks && appState.completedTasks.taskChannel) {
+             return;
+         }
+
+         appState.walletMxt = (parseFloat(appState.walletMxt) || 0) + 10.0; 
+         if(!appState.completedTasks) {
+             appState.completedTasks = {};
+         }
+         appState.completedTasks.taskChannel = true; 
+
+         syncDomBalances();
+         updateTaskButtons();
+         saveUserDataToFirebase();
+
+         const channelUrl = 'https://t.me/MXTCryptoMining';
+         if(window.Telegram?.WebApp?.openTelegramLink) { 
+             window.Telegram.WebApp.openTelegramLink(channelUrl); 
+         } else { 
+             window.open(channelUrl, '_blank'); 
+         }
+     }
+
+     function claimThreeRefTask() {
+         if(appState.completedTasks.task3ref) {
+             alert("You have already claimed this reward!");
+             return;
+         }
+         if(totalTeamCount >= 3) {
+             appState.walletMxt += 10;
+             appState.completedTasks.task3ref = true;
+             saveUserDataToFirebase();
+             syncDomBalances();
+             updateTaskButtons();
+             alert("Success! +10 MXT added to your balance.");
+         } else {
+             alert(`You need ${3 - totalTeamCount} more referral(s) to claim this!`);
+         }
+     }
+
+     function claimMilestone(requiredRefs, rewardAmount) {
+         let taskKey = 'milestone' + requiredRefs;
+         if(appState.completedTasks[taskKey]) {
+             alert("You have already claimed this milestone reward!");
+             return;
+         }
+
+         if(totalTeamCount >= requiredRefs) {
+             appState.walletUsdt += rewardAmount; 
+             appState.completedTasks[taskKey] = true;
+             saveUserDataToFirebase();
+             syncDomBalances();
+             updateTaskButtons();
+             alert(`Success! +${rewardAmount} USDT bonus credited into your Brokerage Wallet.`);
+         } else {
+             alert(`You need ${requiredRefs - totalTeamCount} more referral(s) to unlock this milestone!`);
+         }
+     }
+
+     function updateTaskButtons() {
+         let btnChannel = document.getElementById('claim-task-channel');
+         if(btnChannel) {
+             if(appState.completedTasks.taskChannel) {
+                 btnChannel.innerText = "Completed";
+                 btnChannel.disabled = true;
+                 btnChannel.style.background = "#22252c";
+                 btnChannel.style.color = "#848e9c";
+             } else {
+                 btnChannel.innerText = "Follow";
+                 btnChannel.disabled = false;
+                 btnChannel.style.background = "#ccff00";
+                 btnChannel.style.color = "#000";
+             }
+         }
+
+         let btn3 = document.getElementById('claim-task-3ref');
+         if(btn3) {
+             if(appState.completedTasks.task3ref) {
+                 btn3.innerText = "Completed";
+                 btn3.disabled = true;
+                 btn3.style.background = "#22252c";
+                 btn3.style.color = "#848e9c";
+             } else if(totalTeamCount >= 3) {
+                 btn3.innerText = "Claim";
+                 btn3.disabled = false;
+                 btn3.style.background = "#f3ba2f";
+                 btn3.style.color = "#000";
+             } else {
+                 btn3.innerText = `${totalTeamCount}/3`;
+                 btn3.style.background = "#22252c";
+                 btn3.style.color = "#848e9c";
+             }
+         }
+
+         let milestones = [10, 20, 40, 80, 160];
+         milestones.forEach(ref => {
+             let btn = document.getElementById('milestone-btn-' + ref);
+             let taskKey = 'milestone' + ref;
+             if(btn) {
+                 if(appState.completedTasks[taskKey]) {
+                     btn.innerText = "Claimed";
+                     btn.disabled = true;
+                     btn.style.background = "#22252c";
+                     btn.style.color = "#848e9c";
+                 } else if(totalTeamCount >= ref) {
+                     btn.innerText = "Claim";
+                     btn.disabled = false;
+                     btn.style.background = "#ccff00";
+                     btn.style.color = "#000";
+                 } else {
+                     btn.innerText = `${totalTeamCount}/${ref}`;
+                     btn.disabled = true;
+                     btn.style.background = "#22252c";
+                     btn.style.color = "#848e9c";
+                 }
+             }
+         });
+     }
+
      function loadTeamData() {
          database.ref('users/' + userId + '/team').on('value', (snapshot) => {
              let teamList = snapshot.val();
-             let count = teamList ? Object.keys(teamList).length : 0;
-             document.getElementById('total-team-count').innerText = count;
-             document.getElementById('lev1-people-count').innerText = "0/" + count;
+             totalTeamCount = teamList ? Object.keys(teamList).length : 0;
+             document.getElementById('total-team-count').innerText = totalTeamCount;
+             document.getElementById('lev1-people-count').innerText = totalTeamCount + "/" + totalTeamCount;
+             updateTaskButtons();
          });
      }
 
@@ -1441,7 +1649,11 @@
          if(document.getElementById('me-usdt-brokerage-val')) {
              document.getElementById('me-usdt-brokerage-val').innerText = appState.walletUsdt.toFixed(6);
          }
+         if(document.getElementById('me-usdt-recharge-val')) {
+             document.getElementById('me-usdt-recharge-val').innerText = appState.rechargeUsdt.toFixed(2);
+         }
          updateProgressBarAndClock();
+         updateTaskButtons();
      }
 
      setInterval(() => {
@@ -1593,7 +1805,6 @@
          });
      }
 
-     // ২. রিচার্জ রিকোয়েস্ট সরাসরি Firebase 'recharges' নোডে পুশ করার সিস্টেম
      function submitRechargeRequest() {
          let amount = parseFloat(document.getElementById('recharge-amount-input').value);
          if(isNaN(amount) || amount < 5) {
@@ -1601,7 +1812,6 @@
              return;
          }
          
-         // অ্যাডমিন প্যানেলের জন্য 'recharges' নোডে ডেটা পাঠানো হচ্ছে
          database.ref('recharges/').push({
              userId: userId,
              username: userGlobalName,
@@ -1623,7 +1833,6 @@
          document.getElementById('withdraw-modal').classList.add('open');
      }
 
-     // ২. উইথড্র রিকোয়েস্ট সরাসরি Firebase 'withdrawals' নোডে পুশ করার সিস্টেম
      function submitWithdrawalRequest() {
          let amount = parseFloat(document.getElementById('withdraw-amount-input').value);
          let address = document.getElementById('withdraw-address-input').value.trim();
@@ -1647,7 +1856,6 @@
 
          appState.walletUsdt -= amount;
          
-         // অ্যাডমিন প্যানেলের জন্য 'withdrawals' নোডে ডেটা পাঠানো হচ্ছে
          database.ref('withdrawals/').push({
              userId: userId,
              username: userGlobalName,
@@ -1714,7 +1922,8 @@
          document.getElementById('modal-package-name').innerText = name;
          document.getElementById('modal-package-price').innerText = price.toFixed(2) + " USDT";
          document.getElementById('modal-daily-output').innerText = outputStr;
-         document.getElementById('modal-available-balance').innerText = appState.walletUsdt.toFixed(6) + " USDT";
+         
+         document.getElementById('modal-available-balance').innerText = appState.rechargeUsdt.toFixed(2) + " USDT";
          document.getElementById('purchase-qty').value = "1";
          document.getElementById('purchase-modal').classList.add('open');
      }
@@ -1733,28 +1942,29 @@
      }
 
      function confirmPurchase() {
-         let finalCost = selectedProduct.pricePerUnit * selectedProduct.qty;
-         if (appState.walletUsdt >= finalCost) {
-             appState.walletUsdt -= finalCost;
-             appState.baseHourlySpeed += (selectedProduct.speedPerUnit * selectedProduct.qty);
-             
-             if (!appState.purchasedPlanes) appState.purchasedPlanes = [];
-             
-             appState.purchasedPlanes.push({
-                 name: selectedProduct.name,
-                 qty: selectedProduct.qty,
-                 pricePaid: finalCost.toFixed(2)
-             });
-             
-             closeModal('purchase-modal');
-             alert(`Successfully purchased ${selectedProduct.qty}x ${selectedProduct.name}!`);
-             
-             saveUserDataToFirebase();
-             syncDomBalances();
-             switchSubTab('myplanes');
-         } else {
-             alert("Insufficient USDT Balance inside Brokerage Wallet!");
-         }
+        let finalCost = selectedProduct.pricePerUnit * selectedProduct.qty;
+        
+        if (appState.rechargeUsdt >= finalCost) {
+            appState.rechargeUsdt -= finalCost; 
+            appState.baseHourlySpeed += (selectedProduct.speedPerUnit * selectedProduct.qty);
+            
+            if (!appState.purchasedPlanes) appState.purchasedPlanes = [];
+            
+            appState.purchasedPlanes.push({
+                name: selectedProduct.name,
+                qty: selectedProduct.qty,
+                pricePaid: finalCost.toFixed(2)
+            });
+            
+            closeModal('purchase-modal');
+            alert(`Successfully purchased ${selectedProduct.qty}x ${selectedProduct.name}!`);
+            
+            saveUserDataToFirebase();
+            syncDomBalances();
+            switchSubTab('myplanes');
+        } else {
+            alert("Insufficient USDT Balance inside Recharge Wallet! Please recharge first.");
+        }
      }
 
      function switchTab(tabId, element) {
@@ -1829,5 +2039,6 @@
 
      initTelegramUser();
  </script>
+
 </body>
 </html>
