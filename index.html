@@ -502,6 +502,13 @@
          margin-bottom: 15px;
          border: 1px solid #2b2f36;
      }
+     .team-data-table-rows {
+         display: flex;
+         justify-content: space-between;
+         padding: 8px 0;
+         font-size: 13px;
+         border-bottom: 1px solid #2b2f36;
+     }
      .team-data-row {
          display: flex;
          justify-content: space-between;
@@ -726,7 +733,7 @@
      .nav-item { color: #848e9c; font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
      .nav-item.active { color: #ccff00; }
 
-     @keyframes pulse {
+     @bg-keyframes pulse {
          0% { box-shadow: 0 0 0 0 rgba(243, 186, 47, 0.5); }
          70% { box-shadow: 0 0 0 12px rgba(243, 186, 47, 0); }
          100% { box-shadow: 0 0 0 0 rgba(243, 186, 47, 0); }
@@ -1329,9 +1336,22 @@
      ];
      let currentNoticeIndex = 0;
 
+     // 🛠️ ফিক্স ১: .set() এর জায়গায় .update() করা হলো যাতে এডমিন ভ্যালু ওভাররাইট না হয়
      function saveUserDataToFirebase() {
          if (!userId) return;
-         database.ref('users/' + userId + '/state').set(appState);
+         database.ref('users/' + userId + '/state').update({
+             walletMxt: appState.walletMxt,
+             walletUsdt: appState.walletUsdt,
+             baseHourlySpeed: appState.baseHourlySpeed,
+             isMiningActive: appState.isMiningActive,
+             miningTimeRemaining: appState.miningTimeRemaining,
+             maxSessionTime: appState.maxSessionTime,
+             accumulatedPendingToken: appState.accumulatedPendingToken,
+             purchasedPlanes: appState.purchasedPlanes || [],
+             mxtPriceRate: appState.mxtPriceRate,
+             lastSavedTime: appState.lastSavedTime,
+             completedTasks: appState.completedTasks
+         });
      }
 
      function initTelegramUser() {
@@ -1368,13 +1388,11 @@
                 avatarElement.src = user.photo_url;
             }
 
-            // UPDATED: সঠিক ডোমেইন ভিত্তিক অ্যাপ লিঙ্ক এখানে বসানো হয়েছে
             refLinkElement.innerText = `https://t.me/MXTCrypto_Mining_bot/MXTCryptoMining?startapp=ref_${userId}`;
             loadUserDataAndHandleReferral(userGlobalName);
 
         } else {
             nameElement.innerText = "TEST USER";
-            // UPDATED: সঠিক ডোমেইন ভিত্তিক অ্যাপ লিঙ্ক টেস্ট ইউজারের জন্যও আপডেট করা হয়েছে
             refLinkElement.innerText = `https://t.me/MXTCrypto_Mining_bot/MXTCryptoMining?startapp=ref_${userId}`;
             loadUserDataAndHandleReferral("TestUser");
         }
@@ -1428,21 +1446,35 @@
          });
      }
 
+     // 🛠️ ফিক্স ২: .once() এর বদলে .on() করা হলো যাতে এডমিন প্যানেলের পরিবর্তন লাইভ সিঙ্ক হয়
      function loadUserDataAndHandleReferral(username) {
-         database.ref('users/' + userId).once('value', (snapshot) => {
+         database.ref('users/' + userId).on('value', (snapshot) => {
              let data = snapshot.val();
              
              if (data && data.state) {
-                 appState = data.state;
+                 // এডমিন প্যানেল থেকে আসা লাইভ ব্যালেন্স ও ভ্যালু সিঙ্ক করা হচ্ছে
+                 appState.rechargeUsdt = parseFloat(data.state.rechargeUsdt) || 0.0;
+                 appState.walletUsdt = parseFloat(data.state.walletUsdt) || 0.0;
+                 appState.walletMxt = parseFloat(data.state.walletMxt) || 0.0;
+                 appState.baseHourlySpeed = parseFloat(data.state.baseHourlySpeed) || 10.0;
                  appState.mxtPriceRate = 0.0001;
                  
                  if(!appState.completedTasks) {
-                     appState.completedTasks = { taskChannel: false, task3ref: false, milestone10: false, milestone20: false, milestone40: false, milestone80: false, milestone160: false };
+                     appState.completedTasks = data.state.completedTasks || { taskChannel: false, task3ref: false, milestone10: false, milestone20: false, milestone40: false, milestone80: false, milestone160: false };
+                 } else {
+                     appState.completedTasks = data.state.completedTasks;
                  }
                  
-                 if (appState.isMiningActive) {
+                 appState.purchasedPlanes = data.state.purchasedPlanes || [];
+                 
+                 // মাইনিং রানিং থাকলে ব্যাকগ্রাউন্ড টাইম ক্যালকুলেশন (শুধুমাত্র প্রথম লুপ সেশনের জন্য)
+                 if (data.state.isMiningActive && !miningSessionTicker) {
+                     appState.isMiningActive = data.state.isMiningActive;
+                     appState.miningTimeRemaining = data.state.miningTimeRemaining;
+                     appState.accumulatedPendingToken = data.state.accumulatedPendingToken;
+
                      let now = Date.now();
-                     let elapsedSeconds = Math.floor((now - appState.lastSavedTime) / 1000);
+                     let elapsedSeconds = Math.floor((now - data.state.lastSavedTime) / 1000);
                      
                      if (appState.miningTimeRemaining > elapsedSeconds) {
                          appState.miningTimeRemaining -= elapsedSeconds;
@@ -1461,14 +1493,13 @@
              } else {
                  database.ref('users/' + userId).set({
                      username: username,
-                     referredBy: referrerId || "none"
+                     referredBy: referrerId || "none",
+                     state: appState
                  });
                  
                  if (referrerId && referrerId !== userId) {
                      database.ref('users/' + referrerId + '/team/' + userId).set(true);
                  }
-                 
-                 saveUserDataToFirebase();
              }
              document.getElementById('pending-mine-txt').innerText = appState.accumulatedPendingToken.toFixed(8);
              syncDomBalances();
